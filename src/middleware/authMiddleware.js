@@ -11,10 +11,10 @@ export const authorizeAdmin = (req, res, next) => {
 };
 
 export const authenticateUser = (req, res, next) => {
-    const token = req.header("Authorization");
+    const token = req.header("Authorization")?.split(" ")[1];
 
     if (!token) {
-        return res.status(401).json({ error: 'Access denied. No token provided.' });
+        return res.status(401).json({ error: 'Access denied. Unauthorized' });
     }
 
     try {
@@ -43,7 +43,8 @@ export const verifyToken = (req, res, next) => {
 }
 
 export const checkRole = (role) => (req, res, next) => {
-    if (req.user.role !== role) {
+    if (!req.user || req.user.role !== role) {
         return res.status(401).json({ error: 'Authentication failed, Admin access required' });
     }
+    next();
 }

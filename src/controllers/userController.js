@@ -1,5 +1,7 @@
-import prisma from '../prisma/client.js';
+import redis from '../config/redisClient.js';
+import prisma from '../../prisma/client.js'
 import bcrypt from 'bcrypt';
+import { getCache, setCache, invalidateCache, connectRedis } from '../config/redisClient.js';
 
 export const createUser = async (req, res) => {
     try {
@@ -25,6 +27,14 @@ export const getUsers = async (req, res) => {
 
     // Get all users, with pagination and search by name
     try {
+
+        const cachedkey = 'users:all';
+        const cachedUSers = await getCache(cachedkey);
+
+        if (cachedUSers) {
+            return res.status(200).json(JSON.parse(cachedUSers));
+        }
+
         const page = parseInt(req.query.page) || 1; // Default page 1
         const limit = parseInt(req.query.limit) || 10; // Default limit 10
         const skip = (page - 1) * limit; // Skip the number of pages we are not on
@@ -39,6 +49,8 @@ export const getUsers = async (req, res) => {
             take: limit,
         }); // Get users
 
+        await setCache(cachedkey, users)
+
         res.status(200).json({ total: users.length, page, users })
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -46,17 +58,20 @@ export const getUsers = async (req, res) => {
 }; // Get all users
 
 export const updateUser = async (req, res) => {
-    const { id } = req.params;
-    const { email, role } = req.body;
-
     try {
+        const { id } = req.params;
+        const { name, email, role } = req.body;
+
         const updateUser = await prisma.user.update({
-            where: { id: id },
+            where: { id },
             data: {
+                name,
                 email,
                 role // Update email and role
             }
         });
+
+        await invalidateCache('users');
 
         res.status(200).json({ message: 'User updated!', updateUser });
     } catch (error) {
@@ -78,6 +93,7 @@ export const deleteUser = async (req, res) => {
             where: { id: req.params.id },
         }); // Delete user
     
+        await invalidateCache('users');
         res.status(204).send();
     } catch (error) {
         res.status(500).json({ error: error.message });

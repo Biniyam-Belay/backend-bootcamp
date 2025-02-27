@@ -1,9 +1,14 @@
 import express from 'express';
 import cors from 'cors';
-import { errorHandler } from './middleware/errorHandler.js';
+import { errorHandler } from './src/middleware/errorHandler.js';
+
 import userRoutes from './routes/userRoutes.js';
 import authRoutes from './routes/authRoutes.js';
-import { limiter } from './middleware/rateLimiter.js';
+import uploadRoutes from './routes/upload.js';
+import downloadRoutes from './routes/download.js';
+import deleteRoutes from './routes/file.js';
+
+import { limiter } from './src/middleware/rateLimiter.js';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
@@ -30,6 +35,9 @@ app.use(errorHandler); // Error handler middleware
 //Routes
 app.use('/auth', authRoutes); // Auth routes
 app.use('/users', userRoutes); // User routes
+app.post('/upload', uploadRoutes); // Upload routes
+app.use('/files', downloadRoutes); // Download routes
+app.use('/files', deleteRoutes); // Delete routes
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

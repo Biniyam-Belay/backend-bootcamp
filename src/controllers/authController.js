@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import prisma from '../prisma/client.js';
+import prisma from '../../prisma/client.js'
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 

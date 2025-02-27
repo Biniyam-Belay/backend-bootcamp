@@ -26,4 +26,15 @@ model User {
   role      Role     @default(USER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([email]) // Index for email column for faster search queries
+}
+
+model File {
+  id        String   @id @default(uuid())
+  fileName      String
+  fileUrl       String
+  fileType      String
+  fileSize      Int
+  uploadedAt DateTime @default(now())
 }
